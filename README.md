@@ -48,6 +48,7 @@ Doing this at home I will assign the following resources to my machine:
 And Boot it up
 
 ## Installing the System
+
 After Booting you should get the Select Language page, chose your preferred  
 <p align="center">
   <img src="https://github.com/sumxtx/Born2beRoot/blob/main/assets/2024-11-10_15-26.png" width="600" title="hover text">
@@ -57,6 +58,8 @@ After that you will get to the Installation Summary
 <p align="center">
   <img src="https://github.com/sumxtx/Born2beRoot/blob/main/assets/2024-11-10_16-41.png" width="600" title="hover text">
 </p>
+
+### Disk Partitioning
 
 Go to The __System > Installation Destination__ To Start Partitioning.  
 Here you should Select :white_check_mark: __Custom__, and :white_check_mark: __Done__.  
@@ -109,25 +112,124 @@ Ensure everythin is correct and now we can click on __Done__
   <img src="https://github.com/sumxtx/Born2beRoot/blob/main/assets/2024-11-10_17-21.png" width="600" title="hover text">
 </p>
 
+We will be prompted to the DISK ENXRYPTION PASSPHRASE Enter the Encryption passphrase for your disk and on the Passphrase and Again on the Confirm
+<p align="center">
+  <img src="https://github.com/sumxtx/Born2beRoot/blob/main/assets/2024-11-10_17-33.png" width="600" title="hover text">
+</p>
 
+Save Passphrase and Accept Changes  
 
-- Ensure Installed sudo
+### KDump
+As the subject does not explicitly requires it, we are going to just disable 
+<p align="center">
+  <img src="https://github.com/sumxtx/Born2beRoot/blob/main/assets/2024-11-10_17-37.png" width="600" title="hover text">
+</p>
 
+### Network & Host Name
+Next on Network & Host Name you should enter yours, mine gonna be just rocky42
+<p align="center">
+  <img src="https://github.com/sumxtx/Born2beRoot/blob/main/assets/2024-11-10_17-39.png" width="600" title="hover text">
+</p>
+
+_Apply_ and _Done_
+
+### Root Password
+Select a Root Password and click on _Done_
+<p align="center">
+  <img src="https://github.com/sumxtx/Born2beRoot/blob/main/assets/2024-11-10_17-44.png" width="600" title="hover text">
+</p>
+
+After that no User Creation is needed to Start the Installation, so we will do that later on, Just click on _Begin Installation_ on th bottom right
+<p align="center">
+  <img src="https://github.com/sumxtx/Born2beRoot/blob/main/assets/2024-11-10_17-46.png" width="600" title="hover text">
+</p>
+
+Wait for  the Installation to Complete and _Reboot System_
+<p align="center">
+  <img src="https://github.com/sumxtx/Born2beRoot/blob/main/assets/2024-11-10_17-51.png" width="600" title="hover text">
+</p>
+
+#### First boot
+After Rebooting you will be prompt for the Disk Encryption Passphrase, Enter the one we used on the Installation Process
+<p align="center">
+  <img src="https://github.com/sumxtx/Born2beRoot/blob/main/assets/2024-11-10_17-53.png" width="600" title="hover text">
+</p>
+
+That will finish the boot process and prompt us for the login.
+As we didn't create an user yet boot with the root account and the passphrase for the root
+<p align="center">
+  <img src="https://github.com/sumxtx/Born2beRoot/blob/main/assets/2024-11-10_17-55.png" width="600" title="hover text">
+</p>
+
+Update the system
+```
+dnf update
+```
+That may ask you to confirm a few times, press <kbd>y</kbd> and <kbd>Enter</kbd>
+and Install a few packages 
+```
+dnf install sudo openssh
+```
+That may be already Installed by default, after that reboot again your system
+```
+reboot
+```
 ### User Settings
+After rebooting and login again with root let's create our user and groups
 
 - Add user
--[root@localhost root]# useradd -c "Ying Yang" ying
+```
+useradd -c "Ying Yang" ying42
+```
 - Change User password
-[root@localhost root]# passwd ying
+```
+passwd ying42
+```
 - Add user to wheel group
-[root@localhost root]# usermod -aG wheel sammy
+```
+usermod -aG wheel ying42
+```
+- Create user42 group
+```
+groupadd user42
+```
+- Add user to user42 group
+```
+usermod -aG user42 ying42
+```
+<p align="center">
+  <img src="https://github.com/sumxtx/Born2beRoot/blob/main/assets/2024-11-10_18-11.png" width="600" title="hover text">
+</p>
+
+- Changing user to ying42
+```
+su ying42
+```
+And to double check we can 
+```
+exit
+```
+Until the login prompt again and try to login with the ying42 user
+Than we can try to run a sudo command with the user tho confirm it can run sudo commands
+
+```
+sudo dnf update
+```
+<p align="center">
+  <img src="https://github.com/sumxtx/Born2beRoot/blob/main/assets/2024-11-10_18-15.png" width="600" title="hover text">
+</p>
+
+If Everything is correct we can proceed, and disable the root login That's an extra measure
+that you block the login with the root account
+
 - Disable root login
-> sudo passwd -l root
+```
+sudo passwd -l root
+```
 
 ### SSH
 
 #### Installing SSH
-- Ensure Installed openssh
 
 #### SSH Server Hardening
 
