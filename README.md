@@ -4,6 +4,10 @@ Rocky Linux is a community-driven Enterprise Linux distribution— stable enough
 and community-driven to ensure it stays accessible to all.  
 [About](https://wiki.rockylinux.org)
 
+On this guide i won't delve that much into explaining all the commands, configurations, tools, etc...
+This is up to you. As some people will just blindly copy and repeat what is here without really understading it.
+The part of prepare and investigate for the defense is on you. Good Luck :P!!!
+
 ## Download  
 ### OS Installation Prerequisites  
 
@@ -168,7 +172,7 @@ dnf update
 That may ask you to confirm a few times, press <kbd>y</kbd> and <kbd>Enter</kbd>
 and Install a few packages 
 ```
-dnf install sudo openssh
+dnf install sudo openssh vim
 ```
 That may be already Installed by default, after that reboot again your system
 ```
@@ -233,46 +237,86 @@ sudo passwd -l root
 
 #### SSH Server Hardening
 
-On the local machine (not server, the one you will ssh from)  
-Generate a ssh key pair in case of not having one  
+- On the local machine (not server, the one you will ssh from) Generate a ssh key pair in case of not having one, or generate a new one exclusevily for this purpose 
 
 ```
 cd ~/.ssh
 ssh-keygen -C "web server1" -f id-web1 -t rsa -b 4096
 ```
+<p align="center">
+  <img src="https://github.com/sumxtx/Born2beRoot/blob/main/assets/2024-11-10_18-24.png" width="600" title="hover text">
+</p>
 
-Copy the ssh key into the server with ssh-copy-id
+- Copy the ssh key into the server with ssh-copy-id user@the ip of your machine
 ```
-ssh-copy-id -i id-web1 user@server.ip.address
+ssh-copy-id -i id-web1 ying42@192.168.345.356
 ```
 
-Adjust semanage for ssh
+<p align="center">
+  <img src="https://github.com/sumxtx/Born2beRoot/blob/main/assets/2024-11-10_18-29.png" width="600" title="hover text">
+</p>
+
+We are still login with the user password, let's fix that in the next steps:
+Back into the server machine
+- Adjust semanage for ssh
 ```
-dnf install selinux-policy-targeted
-dnf install policycoreutils-python-utils
-semanage port -a -t ssh_port_t -p tcp 4242
+sudo dnf install selinux-policy-targeted
+sudo dnf install policycoreutils-python-utils
+sudo semanage port -a -t ssh_port_t -p tcp 4242
 ```
 
 Configure firewalld for ssh
 ```
-dnf install firewalld
-systemctl start firewalld
-firewall-cmd --permanent --add-port=PORT/tcp
-firewall-cmd --reload
+sudo dnf install firewalld
+sudo systemctl start firewalld
+sudo firewall-cmd --permanent --add-port=4242/tcp
+sudo firewall-cmd --reload
 ```
+
 #### Configuring sshd_config file
 - Edit /etc/ssh/sshd_config
+```
+sudo vim /etc/ssh/sshd_config
+```
+Uncomment and change the following values:
+```
     Port 4242
     PermitRootLogin no
-    PasswordAuthentication no
+    MaxAuthTries 3
+    MaxSessions 3
     PubkeyAuthentication yes
+    PasswordAuthentication no
+```
 
 #### Test Connection
 - restart sshd 
-- try to connect 
 ```
-ssh user@serverip -p 4242 -i ~/.ssh/id-web1
+sudo systemctl restart sshd
 ```
+
+- Check sshd status
+```
+sudo systemctl status sshd
+```
+
+- try to connect again from your machine but now using the following commands
+```
+ssh Youruser42@Theserverip -p 4242 -i ~/.ssh/id-web1
+```
+Now you should see that your are being ask the password of the ssh we generate earlier, that being said if you lost this key or this password youre completely remotely locked out of the server be aware
+
+<p align="center">
+  <img src="https://github.com/sumxtx/Born2beRoot/blob/main/assets/2024-11-10_18-45.png" width="600" title="hover text">
+</p>
+
+Now we are good to go.  
+Nonetheless, try to log with different manners to see if all is correct  
+For example, try to log with the root account, without the sshid, from another ports etc
+
+
+<p align="center">
+  <img src="https://github.com/sumxtx/Born2beRoot/blob/main/assets/2024-11-10_18-47.png" width="600" title="hover text">
+</p>
 
 ### Configurate sudo policies
 
