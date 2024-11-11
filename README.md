@@ -165,7 +165,7 @@ As we didn't create an user yet boot with the root account and the passphrase fo
   <img src="https://github.com/sumxtx/Born2beRoot/blob/main/assets/2024-11-10_17-55.png" width="600" title="hover text">
 </p>
 
-Update the system
+Update the system with [dnf](dnf cheat sheet)
 ```
 dnf update
 ```
@@ -173,6 +173,7 @@ That may ask you to confirm a few times, press <kbd>y</kbd> and <kbd>Enter</kbd>
 and Install a few packages 
 ```
 dnf install sudo openssh vim
+systemctl enable sshd
 ```
 That may be already Installed by default, after that reboot again your system
 ```
@@ -258,17 +259,18 @@ ssh-copy-id -i id-web1 ying42@192.168.345.356
 
 We are still login with the user password, let's fix that in the next steps:
 Back into the server machine
-- Adjust semanage for ssh
+- Adjust [semanage](selinux cheat sheet) for ssh
 ```
 sudo dnf install selinux-policy-targeted
 sudo dnf install policycoreutils-python-utils
 sudo semanage port -a -t ssh_port_t -p tcp 4242
 ```
 
-Configure firewalld for ssh
+Install firewalld, Start the [service](systemctl cheat sheet) and Configure firewalld for ssh
 ```
 sudo dnf install firewalld
 sudo systemctl start firewalld
+sudo systemctl enable firewalld
 sudo firewall-cmd --permanent --add-port=4242/tcp
 sudo firewall-cmd --reload
 ```
@@ -299,7 +301,7 @@ sudo systemctl restart sshd
 sudo systemctl status sshd
 ```
 
-- try to connect again from your machine but now using the following commands
+- Try to connect again from your machine but now using the following commands
 ```
 ssh Youruser42@Theserverip -p 4242 -i ~/.ssh/id-web1
 ```
@@ -318,25 +320,82 @@ For example, try to log with the root account, without the sshid, from another p
   <img src="https://github.com/sumxtx/Born2beRoot/blob/main/assets/2024-11-10_18-47.png" width="600" title="hover text">
 </p>
 
-### Configurate sudo policies
+### Configuring sudo and password policies
 
 #### sudo general config and logs
+- Create the logs folder for sudo command
+```
 mkdir /var/log/sudo
-edit /etc/sudoers.d/sudo_config
+```
+- Edit the sudo configuration file
+```
+/etc/sudoers.d/sudo_config
+```
+- Add these lines to it
+```
 Defaults  passwd_tries=3
-Defaults  badpass_message="Mensaje de error personalizado"
+Defaults  badpass_message="You are a few steps of being locked out. Try Again:"
 Defaults  logfile="/var/log/sudo/sudo_config"
 Defaults  log_input, log_output
 Defaults  iolog_dir="/var/log/sudo"
 Defaults  requiretty
 Defaults  secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin"
+```
 
-#### sudo password policies
-edit /etc/login.defs
+#### password policies
+- Edit the login defaults file
+```
+vim /etc/login.defs
+```
+- Modify these values
+```
 PASS_MAX_DAYS: 30
 PASS_MIN_DAYS: 2
 PASS_WARN_AGE: 7
+```
+- Get the values for current user
+```
+sudo chage -l ying42
+```
+- Modify the values for existing users
+```
+sudo chage -m 2 root
+sudo chage -M 30 root
+sudo chage -W 7 root
+sudo chage -m 2 ying42
+sudo chage -M 30 ying42
+sudo chage -W 7 ying42
+```
 
 #### pampwquality password configuration
-edit /etc/pam.d/system-auth
-remeber=5
+- libpwquality should have been installed by default
+```
+sudo dnf install libpwquality
+```
+- Edit the system authenticator file to impose password policies
+```
+sudo vim /etc/pam.d/password-auth
+```
+- Add those values to _password required pam_pwquality.so_ ...
+```
+minlen=10 ucredit=-1 dcredit=-1 lcredit=-1 maxrepeat=3 reject_username difok=7 enforce_for_root
+```
+- The same on the system authenticator file
+```
+sudo vim /etc/pam.d/system-auth
+```
+- Add those values to _password required pam_pwquality.so_ ...
+```
+minlen=10 ucredit=-1 dcredit=-1 lcredit=-1 maxrepeat=3 reject_username difok=7 enforce_for_root
+```
+- Now you could try to create a new user let's say _tester_ and try to modify it's password to something weak, to ensure the policies are getting applied
+```
+sudo useradd tester
+sudo passwd tester
+```
+- In my case i have put 15 to make it harder and be able to display the errors, here is what i got when trying to enforce bad password policies 
+<p align="center">
+  <img src="https://github.com/sumxtx/Born2beRoot/blob/main/assets/2024-11-11_23-25.png" width="600" title="hover text">
+</p>
+
+### Monitoring Script
