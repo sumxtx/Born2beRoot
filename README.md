@@ -165,7 +165,7 @@ As we didn't create an user yet boot with the root account and the passphrase fo
   <img src="https://github.com/sumxtx/Born2beRoot/blob/main/assets/2024-11-10_17-55.png" width="600" title="hover text">
 </p>
 
-Update the system with [dnf](dnf cheat sheet)
+Update the system with [dnf](https://github.com/sumxtx/Born2beRoot/blob/main/dnf.md)
 ```
 dnf update
 ```
@@ -259,14 +259,14 @@ ssh-copy-id -i id-web1 ying42@192.168.345.356
 
 We are still login with the user password, let's fix that in the next steps:
 Back into the server machine
-- Adjust [semanage](selinux cheat sheet) for ssh
+- Adjust [semanage](https://github.com/sumxtx/Born2beRoot/blob/main/selinux.md) for ssh
 ```
 sudo dnf install selinux-policy-targeted
 sudo dnf install policycoreutils-python-utils
 sudo semanage port -a -t ssh_port_t -p tcp 4242
 ```
 
-Install firewalld, Start the [service](systemctl cheat sheet) and Configure firewalld for ssh
+Install [firewalld](TODO cheatsheet fiwd), Start the [service](TODO systemctl cheatsheet) and Configure firewalld for ssh
 ```
 sudo dnf install firewalld
 sudo systemctl start firewalld
@@ -325,11 +325,11 @@ For example, try to log with the root account, without the sshid, from another p
 #### sudo general config and logs
 - Create the logs folder for sudo command
 ```
-mkdir /var/log/sudo
+sudo mkdir /var/log/sudo
 ```
 - Edit the sudo configuration file
 ```
-/etc/sudoers.d/sudo_config
+sudo vim /etc/sudoers.d/sudo_config
 ```
 - Add these lines to it
 ```
@@ -345,7 +345,7 @@ Defaults  secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/
 #### password policies
 - Edit the login defaults file
 ```
-vim /etc/login.defs
+sudo vim /etc/login.defs
 ```
 - Modify these values
 ```
@@ -376,7 +376,7 @@ sudo dnf install libpwquality
 ```
 sudo vim /etc/pam.d/password-auth
 ```
-- Add those values to _password required pam_pwquality.so_ ...
+- Add those values to _password requisit pam_pwquality.so_ ...
 ```
 minlen=10 ucredit=-1 dcredit=-1 lcredit=-1 maxrepeat=3 reject_username difok=7 enforce_for_root
 ```
@@ -384,7 +384,7 @@ minlen=10 ucredit=-1 dcredit=-1 lcredit=-1 maxrepeat=3 reject_username difok=7 e
 ```
 sudo vim /etc/pam.d/system-auth
 ```
-- Add those values to _password required pam_pwquality.so_ ...
+- Add those values to _password requisit pam_pwquality.so_ ...
 ```
 minlen=10 ucredit=-1 dcredit=-1 lcredit=-1 maxrepeat=3 reject_username difok=7 enforce_for_root
 ```
@@ -399,3 +399,4 @@ sudo passwd tester
 </p>
 
 ### Monitoring Script
+- [monitoring.sh](Monitoring Script)
